@@ -67,6 +67,12 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 }
+
+module "az_ad" {
+  source = "../../modules/azure-identity/azure-ad"
+  # application_group_name = "odbaa_app_group"
+  oci_domain_uri = "https://idcs-4d6e2581007d4ae38a8820563c3638cd.identity.oraclecloud.com:443/fed"
+}
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -81,14 +87,6 @@ The following requirements are needed by this module:
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
-
-## Providers
-
-The following providers are used by this module:
-
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.74)
-
-- <a name="provider_random"></a> [random](#provider\_random) (~> 3.5)
 
 ## Resources
 
@@ -105,6 +103,14 @@ No required inputs.
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_application_group_name"></a> [application\_group\_name](#input\_application\_group\_name)
+
+Description: User application group name that will be added to the application
+
+Type: `string`
+
+Default: `""`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
@@ -123,6 +129,12 @@ No outputs.
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_az_ad"></a> [az\_ad](#module\_az\_ad)
+
+Source: ../../modules/azure-identity/azure-ad
+
+Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
