@@ -49,6 +49,10 @@ resource "azurerm_resource_group" "this" {
 # with a data source.
 module "test" {
   source = "../../"
+  enable_telemetry = false
+  adbs_rbac        = false
+  exa_rbac         = false
+  group_prefix     = ""
 }
 
 module "az_ad" {
