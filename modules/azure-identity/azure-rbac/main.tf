@@ -16,7 +16,7 @@ locals {
   group_to_role_mapping = var.role_mapping
 }
 
-data "azurerm_subscription" "primary" {
+data "azurerm_subscription" "this" {
 }
 
 resource "azuread_group" "odbaa-required-azure-role-assignment-group" {
@@ -26,7 +26,7 @@ resource "azuread_group" "odbaa-required-azure-role-assignment-group" {
 }
 
 resource "azurerm_role_assignment" "rbac-role-assignment" {
-  scope                = data.azurerm_subscription.primary.id
+  scope                = data.azurerm_subscription.this.id
   role_definition_name = local.group_to_role_mapping[each.value.display_name]
   principal_id         = each.value.object_id
   for_each             = azuread_group.odbaa-required-azure-role-assignment-group
