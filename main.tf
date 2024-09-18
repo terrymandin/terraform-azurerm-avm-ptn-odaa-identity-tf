@@ -4,3 +4,5 @@ module "azure_identity" {
   exa_rbac = var.exa_rbac
   group_prefix = var.group_prefix
 }
+
+data "azurerm_subscription" "primary" {}

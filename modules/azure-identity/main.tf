@@ -14,14 +14,17 @@ locals {
   odbaa_exa_infra_administrator_group  = format("%sodbaa-exa-infra-administrator", var.group_prefix)
   odbaa_exa_pdb_administrators_group   = format("%sodbaa-exa-pdb-administrators", var.group_prefix)
   odbaa_network_administrators_group   = format("%sodbaa-network-administrators", var.group_prefix)
-  odbaa_adbs_groups = var.adbs_rbac ? compact(["${local.odbaa_db_family_administrators_group}", "${local.odbaa_db_family_readers_group}", "${local.odbaa_adbs_db_administrator_group}"]) : []
-  odbaa_exa_groups  = var.exa_rbac ? compact(["${local.odbaa_db_family_administrators_group}", "${local.odbaa_db_family_readers_group}", "${local.odbaa_exa_infra_administrator_group}", "${local.odbaa_vm_cluster_administrator_group}"]) : []
+  odbaa_adbs_groups = var.adbs_rbac ? compact([local.odbaa_db_family_administrators_group, local.odbaa_db_family_readers_group, local.odbaa_adbs_db_administrator_group]) : []
+  odbaa_exa_groups = var.exa_rbac ? compact([local.odbaa_db_family_administrators_group, local.odbaa_db_family_readers_group, local.odbaa_exa_infra_administrator_group, local.odbaa_vm_cluster_administrator_group]) : []
   # odbaa_other_group includes groups doesn't need build in Azure role assigned.
   odbaa_other_groups                   = toset(compact([local.odbaa_costmgmt_administrators_group, local.odbaa_network_administrators_group, local.odbaa_exa_cdb_administrators_group, local.odbaa_exa_pdb_administrators_group]))
   odbaa_vm_cluster_administrator_group = format("%sodbaa-vm-cluster-administrator", var.group_prefix)
+  odbaa_built_in_role_assigned_groups = var.odbaa_built_in_role_assigned_groups
 }
 
 data "azurerm_subscription" "primary" {}
+
+data "azurerm_subscription" "current" {}
 
 resource "azurerm_role_definition" "odbaa_adbs_db_administrators_role" {
   count = var.adbs_rbac ? 1 : 0
@@ -56,33 +59,36 @@ resource "azurerm_role_definition" "odbaa_adbs_db_administrators_role" {
   }
 }
 
-terraform {
-  required_version = "~> 1.5"
-  required_providers {
-    azuread = {
-      source = "hashicorp/azuread"
-      version = "~> 2.48.0"
-    }
-    azurerm = {
-      source = "hashicorp/azurerm"
-      version = "~> 4.2"
-    }
-  }
-}
-
-provider "azurerm" {
-  features {}
-}
-
 resource "azuread_group" "odbaa_other_group" {
   display_name     = each.key
   security_enabled = true
   for_each         = local.odbaa_other_groups
 }
 
-module "azure_rbac_setup" {
-  source                              = "./azure-rbac"
-  odbaa_built_in_role_assigned_groups = toset(concat(local.odbaa_adbs_groups, local.odbaa_exa_groups))
-  odbaa_other_groups                  = local.odbaa_other_groups
-  role_mapping                        = local.group_to_role_mapping
+# module "azure_rbac_setup" {
+#   source                              = "./azure-rbac"
+#   odbaa_built_in_role_assigned_groups = toset(concat(local.odbaa_adbs_groups, local.odbaa_exa_groups))
+#   odbaa_other_groups                  = local.odbaa_other_groups
+#   role_mapping                        = local.group_to_role_mapping
+# }
+
+
+
+resource "azuread_group" "odbaa_required_azure_role_assignment_group" {
+  display_name     = each.key
+  security_enabled = true
+  for_each         = local.odbaa_built_in_role_assigned_groups
+}
+
+resource "azurerm_role_assignment" "rbac_role_assignment" {
+  scope                = data.azurerm_subscription.this.id
+  role_definition_name = local.group_to_role_mapping[each.value.display_name]
+  principal_id         = each.value.object_id
+  for_each             = azuread_group.odbaa-required-azure-role-assignment-group
+}
+
+resource "azuread_group" "odbaa_other_group" {
+  display_name     = each.key
+  security_enabled = true
+  for_each         = local.odbaa_other_groups
 }

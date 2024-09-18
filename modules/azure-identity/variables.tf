@@ -15,3 +15,9 @@ variable "group_prefix" {
   default     = ""
   description = "Group name prefix in Azure"
 }
+
+variable "odbaa_built_in_role_assigned_groups" {
+  type        = set(string)
+  default     = []
+  description = "Groups required Built-in Azure Role assigned"
+}

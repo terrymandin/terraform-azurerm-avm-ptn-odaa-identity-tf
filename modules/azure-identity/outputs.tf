@@ -1,5 +1,4 @@
-data "azurerm_subscription" "current" {}
- 
 output "resource_id" {
+  description = "value of the resource id."
   value = data.azurerm_subscription.current.id
 }
