@@ -6,8 +6,3 @@ output "federation_metadata_xml" {
 output "az_ad_app_object_id" {
   value = azuread_service_principal.application.object_id
 }
-
-output "resource_id" {
-  description = "value of the resource id."
-  value = azuread_service_principal.application.id
-}

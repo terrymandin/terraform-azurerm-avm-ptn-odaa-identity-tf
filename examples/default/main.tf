@@ -51,7 +51,6 @@ module "test" {
   source = "../../"
   enable_telemetry = false
   adbs_rbac        = false
-  exa_rbac         = false
   group_prefix     = ""
 }
 

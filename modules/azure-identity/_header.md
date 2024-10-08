@@ -1,19 +1,53 @@
-# terraform-azurerm-avm-template
+# Azure Identity  
+## Introduction
+Setup Roles Based access control for ODB@A service.
 
-This is a template repo for Terraform Azure Verified Modules.
+## Providers
 
-Things to do:
+| Name | Version |
+|------|---------|
+| [azuread](https://registry.terraform.io/providers/hashicorp/azuread/latest) | ~> 2.48.0 |
+| [azurerm](https://registry.terraform.io/providers/hashicorp/azurerm/latest) | ~>3.0.0 |
 
-1. Set up a GitHub repo environment called `test`.
-1. Configure environment protection rule to ensure that approval is required before deploying to this environment.
-1. Create a user-assigned managed identity in your test subscription.
-1. Create a role assignment for the managed identity on your test subscription, use the minimum required role.
-1. Configure federated identity credentials on the user assigned managed identity. Use the GitHub environment.
-1. Search and update TODOs within the code and remove the TODO comments once complete.
 
-> [!IMPORTANT]
-> As the overall AVM framework is not GA (generally available) yet - the CI framework and test automation is not fully functional and implemented across all supported languages yet - breaking changes are expected, and additional customer feedback is yet to be gathered and incorporated. Hence, modules **MUST NOT** be published at version `1.0.0` or higher at this time.
-> 
-> All module **MUST** be published as a pre-release version (e.g., `0.1.0`, `0.1.1`, `0.2.0`, etc.) until the AVM framework becomes GA.
-> 
-> However, it is important to note that this **DOES NOT** mean that the modules cannot be consumed and utilized. They **CAN** be leveraged in all types of environments (dev, test, prod etc.). Consumers can treat them just like any other IaC module and raise issues or feature requests against them as they learn from the usage of the module. Consumers should also read the release notes for each version, if considering updating to a more recent version of a module to see if there are any considerations or breaking changes etc.
+## Modules
+| Name                       |
+|----------------------------|
+| [azure-rbac](./azure-rbac) |
+
+
+## Inputs Variables
+| VARIABLE |                   DESCRIPTION                    | REQUIRED |                                                  DEFAULT_VALUE |                                              SAMPLE VALUE |
+|:---------|:------------------------------------------------:|:--------:|---------------------------------------------------------------:|--------------------------------------------------------:|
+| `group_prefix` |         ODBAA Group Name Prefix in Azure         |    NO    | "" | |
+|`adbs_rbac`| Setup RBAC for ADB-S in Azure. Default is false. |    NO    | false |  |
+|`exa_rbac`|  Setup RBAC for Exa in Azure. Default is false.  |    NO    | false |  |
+
+## Output Values
+N/A
+
+# Setup Roles based access
+Setting up RBAC for Exa and ADB-S in Azure using default group names:
+1. Create an ADBS admin role since we don’t have an Azure built-in role yet.
+2. Create groups for adbs and exa.
+3. Groups and roles assignment. See [azure-rabc](./azure-rbac/main.tf) for 2 and 3.
+
+### Authentication
+```
+# authenticate AZ cli
+az login --tenant <azure-tenant-id>
+```
+
+### Apply
+
+```
+$ terraform apply -var="adbs_rbac=true" -var="exa_rbac=true"
+```
+To only execute exa or adbs RBAC setup set `adbs_rbac` to `true` and `exa_rbac` to `false`
+```
+$ terraform apply -var="adbs_rbac=true" -var="exa_rbac=false" # exa_rbac set to true and adbs_rbac to false for only EXA RBAC setup in Azure.
+```
+Setting up RBAC for Exa and ADB-S in Azure customize group names
+```
+$ terraform apply -var="adbs_rbac=true" -var="exa_rbac=true" -var="odbaa_exa_infra_administrator_group=<put your exa_infra group name>" -var="<more group var>=<your group name>"
+```
